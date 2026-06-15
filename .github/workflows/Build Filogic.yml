@@ -176,11 +176,11 @@ jobs:
 
     - name: Move custom init scripts for "UCI defaults" first boot (default-settings)
       run: |
+        set -x
         # Moves scripts and other file (if exist) that runs once when the device
         # is first started (default-settings). Overwriting the ImmortalWrt files.
         # In the unpacked firmware archive, it is located inside /etc/uci-defaults/
         ls -la
-        cd openwrt
         [ -e $GITHUB_WORKSPACE/$DEFAULT_SETTING ] && mv $GITHUB_WORKSPACE/$DEFAULT_SETTING openwrt/package/default-settings
         [ -d $GITHUB_WORKSPACE/files ] && mv $GITHUB_WORKSPACE/files openwrt/files
 
