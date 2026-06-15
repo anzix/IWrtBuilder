@@ -116,7 +116,7 @@ jobs:
         git fetch --tags
 
         # Switch to specific commit (for vermagic hack)
-        [ -e $GITHUB_WORKSPACE/$REPO_COMMIT ] && git checkout $GITHUB_WORKSPACE/$REPO_COMMIT
+        [ -e $GITHUB_WORKSPACE/$REPO_COMMIT ] && git checkout ${{ env.REPO_COMMIT }}
 
         # Removing Chinese Mirrors in cloned ImmortalWrt
         PROJECT_MIRRORS_FILE="./scripts/projectsmirrors.json"
