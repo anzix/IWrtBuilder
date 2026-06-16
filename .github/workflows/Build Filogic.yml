@@ -8,8 +8,7 @@ on:
 
 env:
   REPO_URL_IMM: https://github.com/immortalwrt/immortalwrt.git
-  REPO_BRANCH: openwrt-25.12
-  REPO_COMMIT: 56d87f25a25a0b05b96c66ae2af1e39ddbd27580
+  REPO_BRANCH: v25.12.0
   FEEDS_CONF: feeds.conf.default
   SPECIFIC_SETUP_SH: ./sh/specific-setup.sh
   GIT_CLONE_SH: ./sh/git-clone.sh
@@ -114,9 +113,6 @@ jobs:
         ln -sf /workdir/openwrt $GITHUB_WORKSPACE/openwrt
         cd openwrt
         git fetch --tags
-
-        # Switch to specific commit (for vermagic hack)
-        git checkout $REPO_COMMIT
 
         # Removing Chinese Mirrors in cloned ImmortalWrt
         PROJECT_MIRRORS_FILE="./scripts/projectsmirrors.json"
