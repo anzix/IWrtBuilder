@@ -40,26 +40,82 @@
   - Если же вы на прошивке от OpenWrt/Kwrt и т.д, тогда прошивка происходит через
     меню LuCi с указанием файла `squashfs-sysupgrade.bin`
 
-    Переходим в `System` - `Backup / Flash Firmware`, в `Flash new firmware image`
-    жмём `Flash image...` выбираем `squashfs-sysupgrade.bin`
+    Метод 1, из панели Luci
 
-    > [!WARNING]
-    > Убираем галочку `Keep settings and retain the current configuration`, т.к
-    > устройство должно загрузится начисто, без ваших конфигураций.
+    - Переходим в `System` - `Backup / Flash Firmware`, в `Flash new firmware image`
+      жмём `Flash image...` выбираем `squashfs-sysupgrade.bin`
 
-    После прошиваем нажав `Continue`, подключаемся к панели только тогда когда
-    индикатор на роутере будет гореть статично синим цветом
+      > [!WARNING]
+      > Убираем галочку `Keep settings and retain the current configuration`, т.к
+      > устройство должно загрузится начисто, без ваших конфигураций.
+
+    Метод 2, консолью в ssh
+
+    - Если же у вас не получается прошить графически, подключитесь к роутеру по
+      ssh и используйте команду `sysupgrade` с аргументом `-n` (без сохранения
+      данных)
+
+      После прошиваем нажав `Continue`, подключаемся к панели только тогда когда
+      индикатор на роутере будет гореть статично синим цветом
+
+      ```sh
+      sysupgrade -n immortalwrt-mediatek-filogic-netis_nx31-squashfs-sysupgrade.itb
+      ```
 
 ## Полезная информация
 
-### TODO: Официальный репозиторий kmod и добавление feed'а
+### Официальный репозиторий kmod и добавление feed'а
+
+Вы можете использовать репозиторий kmod из ImmortalWrt если в процессе сборки
+прошивки был зафиксирован хеш vermagic из ImmortalWrt (смотрите лог в Github
+Actions на этапе `Performing a specific setup (1st script)`)
+
+```txt
+...
+✅ Kernel version matches, getting kmod hash and writing vermagic file ...
+Download successful, current vermagic:
+24374d30cf46b9bf43d4901f3df3aac6
+```
+
+Как загрузитесь в устройство проверьте вашу версию ядра используя команду и
+скопируйте хеш
+
+```sh
+apk info kernel
+
+# У меня указан 24374d30cf46b9bf43d4901f3df3aac6 что соответствует действительности
+```
+
+Далее [смотрим репозиторий kmod вашего устройства](https://downloads.immortalwrt.org/releases/25.12.0/targets/mediatek/filogic/kmods/)
+и сверяем с вашей текущей версией. Если всё совпадает значит можно использовать
+данный kmod репозиторий
+
+После чего указываем в `/etc/apk/repositories.d/distfeeds.list` в конце строку
+с указанием kmod репозитория в соответствии с вашей версией ядра и хешем vermagic.
+Вот пример
+
+```txt
+https://downloads.immortalwrt.org/releases/25.12.0/targets/mediatek/filogic/kmods/6.12.87-1-24374d30cf46b9bf43d4901f3df3aac6/packages.adb
+```
+
+После, сохраняем и обновляем индексы командой `apk update`. И проверяем на
+установку какого-либо kmod модуля ядра, укав в поиске `kmod`
+
+Если при установке нет никаких ошибок значит вы всё правильно настроили.
 
 ## Проблемы и способы их решения
 
-1. Текущие зеркала выдают ошибку `Bad gateway 502`
+1. В панели Luci во **Backup / Flash Firmware** при загрузке прошивки вылезает
+   ошибка `XHR request timed out`
 
-   Решение: Временно перейти на другое зеркало, например сами авторы в [тг канале](https://t.me/ctcgfw_project_openwrt/55)
-   советуют использовать из [help.mirrorz.org](https://help.mirrorz.org/immortalwrt/)
+   Решение: Используйте `sysupgrade -n ...` из под консоли роутера, предварительно
+   подключившись по ssh.
+
+2. Текущие зеркала выдают ошибку `Bad gateway 502`
+
+   Решение: Временно перейти на другое зеркало, например сами авторы ImmortalWrt
+   в [тг канале](https://t.me/ctcgfw_project_openwrt/55) советуют использовать
+   из [help.mirrorz.org](https://help.mirrorz.org/immortalwrt/)
 
    Команда по смене зеркала
 
