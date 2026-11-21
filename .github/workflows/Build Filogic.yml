@@ -46,7 +46,7 @@ jobs:
       - name: Publish release
         uses: ./.github/actions/openwrt-publish-release
         with:
-          release-tag-prefix: Filogic-25.12-${{ github.event.inputs.tag }}
+          release-tag-prefix: Filogic-${{ github.event.inputs.tag }}
           source-url: ${{ github.inputs.repo_url }}
           source-branch: ${{ github.event.inputs.tag }}
           release-files: all-artifacts/firmware-*/*
