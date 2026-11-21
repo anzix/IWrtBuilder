@@ -15,7 +15,7 @@ on:
           - 'true'
           - 'false'
       tag:
-        description: 'immortalwrt version'
+        description: 'ImmortalWrt LuCi version tag'
         required: false
         default: 'v25.12.2'
 
