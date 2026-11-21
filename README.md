@@ -92,27 +92,29 @@
   действий
 
   - [Build Filogic.yml](./.github/workflows/Build%20Filogic.yml) главный профиль
-    сборки для платформы Filogic. Использует рецепты `./.github/workflows/_openwrt-build-device.yml`
-    для сборки каждого устройства и `./.github/actions/openwrt-publish-release`
+    сборки для платформы Filogic. Использует рецепты [`./.github/workflows/_openwrt-build-device.yml`](./.github/workflows/_openwrt-build-device.yml)
+    для сборки каждого устройства и [`./.github/actions/openwrt-publish-release/action.yml`](./.github/actions/openwrt-publish-release/action.yml)
     для публикации
 
     > Можно настроить сборку по расписанию
 
-  - `_openwrt-build-device.yml` переиспользуемый workflow который использует
-    `Build Filogic.yml`. Содержит полную цепочку настройки виртуального окружения
-    и сборки ImmortalWrt для каждого устройства. Является самым важным файлом
+  - [`_openwrt-build-device.yml`](./.github/workflows/_openwrt-build-device.yml)
+    переиспользуемый workflow который использует [`Build Filogic.yml`](./.github/workflows/Build%20Filogic.yml).
+    Содержит полную цепочку настройки виртуального окружения и сборки ImmortalWrt
+    для каждого устройства. Является самым важным файлом
 
 - [.github/workflows/](./.github/actions/)
 
   В этом каталоге содержатся файлы которые выполняют повторяющиеся действия после
   сборки (workflow) каждого устройства
 
-  - `openwrt-publish-release/action.yml` объединяет артефакты для отдельных устройств,
-    формирует описание release-body, публикует релиз на Github и удаляет старые
-    экземпляры запусков
+  - [`openwrt-publish-release/action.yml`](./.github/actions/openwrt-publish-release/action.yml)
+    объединяет артефакты для отдельных устройств, формирует описание release-body,
+    публикует релиз на Github и удаляет старые экземпляры запусков
 
-  - `openwrt-release-firmware/action.yml` подготавливает целевой каталог для
-    файлов прошивок, загружает его, создаёт release-tag и удалите старые артефакты.
+  - [`openwrt-release-firmware/action.yml`](./.github/actions/openwrt-release-firmware/action.yml)
+    подготавливает целевой каталог для файлов прошивок, загружает его, создаёт
+    release-tag и удалите старые артефакты.
 
 До начала сборки прошивки необходимо в вашем форк репозитории **зайти в
 Settings - Actions, General** и в **`Workflow permissions`** поменять с **`Read
