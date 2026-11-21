@@ -91,8 +91,8 @@
   В этом каталоге хранятся файлы для начального действия сборки а также повторяемых
   действий
 
-  - [Build IPQ-60xx.yml](./.github/workflows/Build%20IPQ-60xx.yml) главный профиль
-    сборки для платформы IPQ-60xx. Использует рецепты `./.github/workflows/_openwrt-build-device.yml`
+  - [Build Filogic.yml](./.github/workflows/Build%20Filogic.yml) главный профиль
+    сборки для платформы Filogic. Использует рецепты `./.github/workflows/_openwrt-build-device.yml`
     для сборки каждого устройства и `./.github/actions/openwrt-publish-release`
     для публикации
 
