@@ -10,6 +10,10 @@ on:
         description: 'Should Docker be compiled?'
         required: false
         default: 'false'
+        type: choice
+        options:
+          - 'true'
+          - 'false'
       tag:
         description: 'immortalwrt version'
         required: false
