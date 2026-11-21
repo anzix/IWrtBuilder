@@ -39,6 +39,11 @@ if [ -n "$root_password" ]; then
    (echo "$root_password"; sleep 1; echo "$root_password") | passwd > /dev/null
 fi
 
+# ext(end)part(ition).sh
+# Script for easy increasing the space in /overlay (rootfs) using sdcard (if supported)
+chmod +x /usr/share/extpart.sh
+ln -s /usr/share/extpart.sh /bin/extpart
+
 # Configure LAN
 if [ "$(grep -c "netis NX31" /etc/board.json)" -ne '0' ];then
    # Change the default IP
@@ -51,9 +56,9 @@ if [ "$(grep -c "netis NX31" /etc/board.json)" -ne '0' ];then
    # Example: 192.168.1.1/24
    uci set network.lan.ipaddr="192.168.1.1/24"
 
-   # Change Wireless ssid name instead of LibWrt
-   uci set wireless.default_radio0.ssid='NetisNX31-5G'
-   uci set wireless.default_radio1.ssid='NetisNX31-2.4G'
+   # Change Wireless ssid name instead of ImmortalWrt
+   uci set wireless.default_radio0.ssid='NetisNX31-2.4G'
+   uci set wireless.default_radio1.ssid='NetisNX31-5G'
 
    # Change Contry Code
    uci set wireless.radio0.country='RU'
@@ -63,7 +68,7 @@ if [ "$(grep -c "netis NX31" /etc/board.json)" -ne '0' ];then
 fi
 
 # Basic system settings (time zone, hostname, ntp and etc)
-uci set system.@system[0].timezone="Asia/Yekaterinburg"
+uci set system.@system[0].timezone="<+05>-5"
 uci set system.@system[0].zonename="Asia/Yekaterinburg"
 # uci set system.@system[0].hostname=''
 uci del system.ntp.server
@@ -132,13 +137,23 @@ uci set luci.apply.timeout='3' # Сколько времени LuCI ждёт о�
 uci set luci.apply.display='1' # Включает визуальный индикатор применения настроек в LuCI, default 1.5
 uci commit luci
 
-# Configure cron
-mkdir /etc/crontabs
-touch /etc/crontabs/root
+# Configure irqbalance
+if [ "$( $PACKAGE_MANAGER 2>/dev/null | grep -c "^luci-app-irqbalance")" -ne '0' ];then
+   uci set irqbalance.irqbalance.enabled='1'
+fi
+
+append_cron_once() {
+  cron_line="$1"
+  cron_file="/etc/crontabs/root"
+
+  mkdir -p "$(dirname "$cron_file")"
+  touch "$cron_file"
+  grep -Fqx "$cron_line" "$cron_file" || echo "$cron_line" >> "$cron_file"
+}
 
 # Add cron job for ramfree (drop caches) if package is installed
-if [ "$( $PACKAGE_MANAGER 2>/dev/null| grep -c "ramfree")" -ne '0' ] && [ "$(grep -c "/proc/sys/vm/drop_caches" /etc/crontabs/root)" -eq '0' ];then
-   echo "0 */1 * * * sync && echo 3 > /proc/sys/vm/drop_caches" >> /etc/crontabs/root
+if [ "$( $PACKAGE_MANAGER 2>/dev/null| grep -c "ramfree")" -ne '0' ];then
+  append_cron_once "0 */1 * * * sync && echo 3 > /proc/sys/vm/drop_caches"
 fi
 
 # Restart the network

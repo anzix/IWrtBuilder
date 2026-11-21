@@ -1,4 +1,4 @@
-# Авто-сборщик ImmortalWrt
+# Авто-сборщик [ImmortalWrt](https://github.com/immortalwrt/immortalwrt) (Китайский форк OpenWrt)
 
 ## Информация по поддерживаемым устройствам
 
@@ -62,46 +62,78 @@
       sysupgrade -n immortalwrt-mediatek-filogic-netis_nx31-squashfs-sysupgrade.itb
       ```
 
-## Полезная информация
+## Преимущества
 
-### Официальный репозиторий kmod и добавление feed'а
+- Автоматический зафиксированный vermagic для использования официального kmod
+  репозитория ImmortalWrt
+- Встроенные пакеты для ускорения интернета 🚀
+- Настроенный из коробки FullCone NAT, ZRam
+- Дополнительный набор пакетов (современная тема, файловый менеджер, менеджер дисков)
+- Настроенный https с самоподписанным сертификатом (openssl)
+- Встроенный [скрипт для расширения встроенной памяти роутера](./files/usr/share/extpart.sh)
 
-Вы можете использовать репозиторий kmod из ImmortalWrt если в процессе сборки
-прошивки был зафиксирован хеш vermagic из ImmortalWrt (смотрите лог в Github
-Actions на этапе `Performing a specific setup (1st script)`)
+## Если вас не устраивают мои настройки?
+
+Тогда [форкайте](https://github.com/anzix/IWrtBuilder/fork) и изменяйте под ваши
+нужды
+
+- defconfig (модули ядра, наличия каких-то оф. пакетов, feed репозитории и т.д):
+  У каждого устройства собственный `.config`, как например для [netis_nx31.config](./config/netis_nx31.config)
+- Настройки при первом запуске: [zzz-default-settings](./default-settings-anzix/files/zzz-default-settings)
+- Кастомные пакеты: [git-clone.sh](./sh/git-clone.sh)
+- Специфичные настройки (фиксирование хеша vermagic, применение собственных патчей
+  и т.д): [specific-setup.sh](./sh/specific-setup.sh)
+
+Каталоги и файлы в них:
+
+- [.github/workflows/](./.github/workflows/)
+
+  В этом каталоге хранятся файлы для начального действия сборки а также повторяемых
+  действий
+
+  - [Build IPQ-60xx.yml](./.github/workflows/Build%20IPQ-60xx.yml) главный профиль
+    сборки для платформы IPQ-60xx. Использует рецепты `./.github/workflows/_openwrt-build-device.yml`
+    для сборки каждого устройства и `./.github/actions/openwrt-publish-release`
+    для публикации
+
+    > Можно настроить сборку по расписанию
+
+  - `_openwrt-build-device.yml` переиспользуемый workflow который использует
+    `Build Filogic.yml`. Содержит полную цепочку настройки виртуального окружения
+    и сборки ImmortalWrt для каждого устройства. Является самым важным файлом
+
+- [.github/workflows/](./.github/actions/)
+
+  В этом каталоге содержатся файлы которые выполняют повторяющиеся действия после
+  сборки (workflow) каждого устройства
+
+  - `openwrt-publish-release/action.yml` объединяет артефакты для отдельных устройств,
+    формирует описание release-body, публикует релиз на Github и удаляет старые
+    экземпляры запусков
+
+  - `openwrt-release-firmware/action.yml` подготавливает целевой каталог для
+    файлов прошивок, загружает его, создаёт release-tag и удалите старые артефакты.
+
+До начала сборки прошивки необходимо в вашем форк репозитории **зайти в
+Settings - Actions, General** и в **`Workflow permissions`** поменять с **`Read
+repository contents and packages permissions`** на **`Read and write permissions`**
+и нажать **`Save`**
+
+Это исправляет ошибку на этапе **`Generate unified publishing tags and content.`**
 
 ```txt
-...
-✅ Kernel version matches, getting kmod hash and writing vermagic file ...
-Download successful, current vermagic:
-24374d30cf46b9bf43d4901f3df3aac6
+⚠️ GitHub release failed with status: 403
+{"message":"Resource not accessible by integration","documentation_url":"https://docs.github.com/rest/releases/releases#create-a-release","status":"403"}
+Skip retry — your GitHub token/PAT does not have the required permission to create a release
+⚠️ Unexpected error fetching GitHub release for tag refs/heads/main: HttpError: Resource not accessible by integration - https://docs.github.com/rest/releases/releases#create-a-release
+Error: Resource not accessible by integration - https://docs.github.com/rest/releases/releases#create-a-release
 ```
 
-Как загрузитесь в устройство проверьте вашу версию ядра используя команду и
-скопируйте хеш
+## Время сборки
 
-```sh
-apk info kernel
-
-# У меня указан 24374d30cf46b9bf43d4901f3df3aac6 что соответствует действительности
-```
-
-Далее [смотрим репозиторий kmod вашего устройства](https://downloads.immortalwrt.org/releases/25.12.0/targets/mediatek/filogic/kmods/)
-и сверяем с вашей текущей версией. Если всё совпадает значит можно использовать
-данный kmod репозиторий
-
-После чего указываем в `/etc/apk/repositories.d/distfeeds.list` в конце строку
-с указанием kmod репозитория в соответствии с вашей версией ядра и хешем vermagic.
-Вот пример
-
-```txt
-https://downloads.immortalwrt.org/releases/25.12.0/targets/mediatek/filogic/kmods/6.12.87-1-24374d30cf46b9bf43d4901f3df3aac6/packages.adb
-```
-
-После, сохраняем и обновляем индексы командой `apk update`. И проверяем на
-установку какого-либо kmod модуля ядра, укав в поиске `kmod`
-
-Если при установке нет никаких ошибок значит вы всё правильно настроили.
+В первый раз прошивка собирается где-то за 2 часа (может чуть больше). После успешной
+сборки **и создания кеша** при повторной сборки - 1 час (иногда чуть дольше, +15-40
+минут). Если повезёт то вообще за 40~50 минут.
 
 ## Проблемы и способы их решения
 
@@ -139,7 +171,7 @@ https://downloads.immortalwrt.org/releases/25.12.0/targets/mediatek/filogic/kmod
    sed -i.bak "s,https://mirror.nju.edu.cn,https://downloads.immortalwrt.org,g" "/etc/apk/repositories.d/distfeeds.list"
    ```
 
-2. При обновлении индексов пакета возникает множество ошибок связанных с
+3. При обновлении индексов пакета возникает множество ошибок связанных с
    `wgetSSL verify error: certificate is not yet valid`
 
    Это происходит из-за того, что при первом включении системное время указано
@@ -150,29 +182,15 @@ https://downloads.immortalwrt.org/releases/25.12.0/targets/mediatek/filogic/kmod
 
 ## TODO
 
+- [ ] Встроить пакет [zapret2-openwrt](https://github.com/1andrevich/zapret2-openwrt)
+
 ## Благодарность
 
 - [qlxi/GL_AXT1800](https://github.com/qlxi/GL_AXT1800)
 - [m0eak/Openwrt_Builder](https://github.com/m0eak/Openwrt_Builder)
+- [P3TERX/Actions-OpenWrt](https://github.com/P3TERX/Actions-OpenWrt)
 - [wukongdaily/AutoBuildImmortalWrt](https://github.com/wukongdaily/AutoBuildImmortalWrt)
 
-И другие
+## Лицензия
 
-- [Microsoft Azure](https://azure.microsoft.com)
-- [GitHub Actions](https://github.com/features/actions)
-- [OpenWrt](https://github.com/openwrt/openwrt)
-- [JiaY-shi/openwrt](https://github.com/JiaY-shi/openwrt.git)
-- [tmate](https://github.com/tmate-io/tmate)
-- [mxschmitt/action-tmate](https://github.com/mxschmitt/action-tmate)
-- [csexton/debugger-action](https://github.com/csexton/debugger-action)
-- [Cowtransfer](https://cowtransfer.com)
-- [WeTransfer](https://wetransfer.com/)
-- [Mikubill/transfer](https://github.com/Mikubill/transfer)
-- [softprops/action-gh-release](https://github.com/softprops/action-gh-release)
-- [ActionsRML/delete-workflow-runs](https://github.com/ActionsRML/delete-workflow-runs)
-- [dev-drprasad/delete-older-releases](https://github.com/dev-drprasad/delete-older-releases)
-- [peter-evans/repository-dispatch](https://github.com/peter-evans/repository-dispatch)
-
-## License
-
-[MIT](https://github.com/P3TERX/Actions-OpenWrt/blob/main/LICENSE) © [**P3TERX**](https://p3terx.com)
+[MIT](https://github.com/anzix/IWrtBuilder/blob/main/LICENSE)
