@@ -33,6 +33,9 @@ declare -A REPOS=(
 
     # Used by: CONFIG_PACKAGE_luci-proto-amneziawg=y
     ["https://github.com/Slava-Shchipunov/awg-openwrt"]=""
+
+    # Used by: CONFIG_PACKAGE_byedpi=y
+    ["https://github.com/DPITrickster/ByeDPI-OpenWrt"]=""
 )
 
 CONFLICTING_MAKEFILE_KEYWORDS=()

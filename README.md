@@ -33,17 +33,17 @@
        - [immortalwrt-25.12.0-mediatek-filogic-netis_nx31-bl31-uboot.fip](https://downloads.immortalwrt.org/releases/25.12.0/targets/mediatek/filogic/immortalwrt-25.12.0-mediatek-filogic-netis_nx31-bl31-uboot.fip)
        - [immortalwrt-25.12.0-mediatek-filogic-netis_nx31-preloader.bin](https://downloads.immortalwrt.org/releases/25.12.0/targets/mediatek/filogic/immortalwrt-25.12.0-mediatek-filogic-netis_nx31-preloader.bin)
 
-    2. В режиме tftp загружаем из репозитория `squashfs-factory` чтобы загрузится
+    2. В режиме tftp загружаем из репозитория `initramfs-recovery.itb` чтобы загрузится
        в ImmortalWrt (из ОЗУ)
-    3. Внутри врменной ImmortalWrt загружаем `squashfs-sysupgrade.bin`
+    3. Внутри врменной ImmortalWrt загружаем `squashfs-sysupgrade.itb`
 
   - Если же вы на прошивке от OpenWrt/Kwrt и т.д, тогда прошивка происходит через
-    меню LuCi с указанием файла `squashfs-sysupgrade.bin`
+    меню LuCi с указанием файла `squashfs-sysupgrade.itb`
 
     Метод 1, из панели Luci
 
     - Переходим в `System` - `Backup / Flash Firmware`, в `Flash new firmware image`
-      жмём `Flash image...` выбираем `squashfs-sysupgrade.bin`
+      жмём `Flash image...` выбираем `squashfs-sysupgrade.itb`
 
       > [!WARNING]
       > Убираем галочку `Keep settings and retain the current configuration`, т.к
@@ -74,21 +74,14 @@
 
 ## Если вас не устраивают мои настройки?
 
-Тогда [форкайте](https://github.com/anzix/IWrtBuilder/fork) и изменяйте под ваши
-нужды
-
-- defconfig (модули ядра, наличия каких-то оф. пакетов, feed репозитории и т.д):
-  У каждого устройства собственный `.config`, как например для [netis_nx31.config](./config/netis_nx31.config)
-- Настройки при первом запуске: [zzz-default-settings](./default-settings-anzix/files/zzz-default-settings)
-- Кастомные пакеты: [git-clone.sh](./sh/git-clone.sh)
-- Специфичные настройки (фиксирование хеша vermagic, применение собственных патчей
-  и т.д): [specific-setup.sh](./sh/specific-setup.sh)
+Тогда [форкайте](https://github.com/anzix/IWrtBuilder/fork), используйте его как
+шаблон и изменяйте под ваши нужды. Для понимания вот структура репозитория:
 
 Каталоги и файлы в них:
 
 - [.github/workflows/](./.github/workflows/)
 
-  В этом каталоге хранятся файлы для начального действия сборки а также повторяемых
+  В этом каталоге хранятся файлы CI/CD для начального действия сборки а также повторяемых
   действий
 
   - [Build Filogic.yml](./.github/workflows/Build%20Filogic.yml) главный профиль
@@ -116,6 +109,24 @@
     подготавливает целевой каталог для файлов прошивок, загружает его, создаёт
     release-tag и удалите старые артефакты.
 
+- Полезные вспомогательные shell скрипты внутри [./files/](./files/): Накладывает
+  на rootfs прошивку файлы в целевую файловую систему
+
+- Профили устройства [./config/](./config/): Так называемые defconfig (содержит
+  модули ядра, наличия каких-то оф. пакетов, feed репозитории и т.д):
+
+  У каждого устройства собственный `.config`, как например [netis_nx31.config](./config/netis_nx31.config)
+
+  > Также в данном каталоге могут быть файлы фукнкции, дополняющий текущий defconfig
+  > устройства. Например [./config/docker.config](./config/docker.config) применяется
+  > к текущему defconfig профилю устройства если в `Should Docker be compiled?`
+  > выбран `true`
+
+- Настройки при первом запуске: [zzz-default-settings](./default-settings-anzix/files/zzz-default-settings)
+- Кастомные пакеты: [git-clone.sh](./sh/git-clone.sh), указываются в блоке `REPOS`
+- Специфичные настройки (фиксирование хеша vermagic, применение собственных патчей
+  и т.д): [specific-setup.sh](./sh/specific-setup.sh)
+
 До начала сборки прошивки необходимо в вашем форк репозитории **зайти в
 Settings - Actions, General** и в **`Workflow permissions`** поменять с **`Read
 repository contents and packages permissions`** на **`Read and write permissions`**
@@ -133,9 +144,10 @@ Error: Resource not accessible by integration - https://docs.github.com/rest/rel
 
 ## Время сборки
 
-В первый раз прошивка собирается где-то за 2 часа (может чуть больше). После успешной
-сборки **и создания кеша** при повторной сборки - 1 час (иногда чуть дольше, +15-40
-минут). Если повезёт то вообще за 40~50 минут.
+В первый раз (или при большом перерыве) прошивка собирается где-то за 2-3 часа
+(может чуть больше). После успешной сборки **и создания кэша** при повторной
+сборки - 1 час (иногда чуть дольше, +15-40 минут). Если повезёт то вообще за
+40~50 минут.
 
 ## Проблемы и способы их решения
 
@@ -183,8 +195,6 @@ Error: Resource not accessible by integration - https://docs.github.com/rest/rel
    после чего обновление индексов пакетов будет происходить нормально
 
 ## TODO
-
-- [ ] Встроить пакет [zapret2-openwrt](https://github.com/1andrevich/zapret2-openwrt)
 
 ## Благодарность
 
